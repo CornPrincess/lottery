@@ -1,7 +1,7 @@
 # 抽奖系统
 ERD design for a simple lottery system
 
-![lottery system](https://blog-1300663127.cos.ap-shanghai.myqcloud.com/BackEnd_Notes/database/lottery.png)
+![lottery system](https://blog-1300663127.cos.ap-shanghai.myqcloud.com/BackEnd_Notes/database/lottery_ERD2.png)
 
 ## 实现功能
 ### 用户抽奖
@@ -11,14 +11,17 @@ ERD design for a simple lottery system
 对每天，每周，每月，每年，终身对应的次数进行限制
 
 实现方案：
-通过设计的 count_day,count_week,count_month,count_year,count_lifelong 表格进行限制。
+通过设计的 count_date 与 count_limit 表格进行是否有抽奖资格的限制。
 思路：
-抽奖前先通过各个表中limit与count进行判断用户目前是否有资格参与抽奖
-- 如果可以抽奖，进行抽奖逻辑，然后使用表中的 last_update 字段进行乐观锁的方式更新对应的表格
-  - 更新失败，说明有并发冲突，此次抽奖显示失败，用户进行重试
-  - 更新成功，此次抽奖成功
-- 如果不能抽奖，告诉用户抽奖次数已用完。
+1.通过 user_id 普通查找 count_limit 表格，得到该用户每天，每周，每月，每年，终身限制的次数
 
+** 开始事务 **
+2.通过 user_id 使用悲观锁查找 count_date 表， 得到用户在该天，该周，该月，该年，终身以抽奖的次数
+3.通过前两步得到的值进行判断用户是否有资格抽奖
+- 如果可以抽奖，进行抽奖逻辑，
+- 如果不能抽奖，告诉用户抽奖次数已用完。
+** 结束事务 **
+4.
 
 #### 限制2
 对用户参与过的所有抽奖活动总和进行限制
